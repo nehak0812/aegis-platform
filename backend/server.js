@@ -16,20 +16,24 @@ const HOST = '0.0.0.0';
 
 const HTML_PATH = path.join(__dirname, '..', 'AEGIS-Gods-Eye-standalone.html');
 
-// Run pipeline ingestion on boot
+// Run pipeline ingestion
 async function runPipeline() {
-  console.log('====================================================');
-  console.log('[AEGIS PIPELINE] Running Phase 0 & Phase 1 Ingestion...');
-  console.log('====================================================');
-  
-  seedSourceRegistry();
-  await collectGLEIF();
-  await collectRegistries();
-  await collectVulnerabilities();
-  await collectCERTs();
-  ScoringEngine.computeAllScores();
-  
-  console.log('[AEGIS PIPELINE] Pipeline execution completed successfully.');
+  try {
+    console.log('====================================================');
+    console.log('[AEGIS PIPELINE] Running Phase 0 & Phase 1 Ingestion...');
+    console.log('====================================================');
+    
+    seedSourceRegistry();
+    await collectGLEIF();
+    await collectRegistries();
+    await collectVulnerabilities();
+    await collectCERTs();
+    ScoringEngine.computeAllScores();
+    
+    console.log('[AEGIS PIPELINE] Pipeline execution completed successfully.');
+  } catch (e) {
+    console.error('[AEGIS PIPELINE] Ingestion background warning:', e);
+  }
 }
 
 // Generate AEGIS bootstrap object matching window.AEGIS frontend shape
@@ -223,11 +227,12 @@ const server = http.createServer(async (req, res) => {
   res.end(JSON.stringify({ error: 'Endpoint not found' }));
 });
 
-// Start Server
-runPipeline().then(() => {
-  server.listen(PORT, HOST, () => {
-    console.log(`[AEGIS API SERVER] Running on http://${HOST}:${PORT}`);
-    console.log(`[AEGIS API SERVER] Frontend UI ready at http://localhost:${PORT}/`);
-    console.log(`[AEGIS API SERVER] Read API ready at http://localhost:${PORT}/api/bootstrap`);
-  });
+// START HTTP SERVER IMMEDIATELY (Fixes Railway Health Check & Port Binding)
+server.listen(PORT, HOST, () => {
+  console.log(`[AEGIS API SERVER] Running on http://${HOST}:${PORT}`);
+  console.log(`[AEGIS API SERVER] Frontend UI ready at http://${HOST}:${PORT}/`);
+  console.log(`[AEGIS API SERVER] Read API ready at http://${HOST}:${PORT}/api/bootstrap`);
+  
+  // Run background ingestion asynchronously without blocking server port binding
+  runPipeline();
 });
