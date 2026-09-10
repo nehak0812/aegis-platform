@@ -17,8 +17,15 @@ const HOST = '0.0.0.0';
 
 const HTML_PATH = path.join(__dirname, '..', 'AEGIS-Gods-Eye-standalone.html');
 
-// Pre-seed major global organizations across Energy, Tech, Banking, and Healthcare
+// Pre-seed major global organizations across Healthcare, Tech, Banking, and Energy
 const GLOBAL_SEED_ENTITIES = [
+  // Healthcare & Life Sci
+  { lei: '2138006E8FLKLO032890', name: 'ASTRAZENECA PLC', sector: 'Healthcare & Life Sci', country: 'United Kingdom', city: 'Cambridge', lat: 52.2053, lon: 0.1218, domain: 'astrazeneca.com', emp: 89000, rev: 45800, nis2: 'DORA / NIS2 · Critical Healthcare Entity' },
+  { lei: '549300V6E985YV001234', name: 'PFIZER INC.', sector: 'Healthcare & Life Sci', country: 'United States', city: 'New York', lat: 40.7128, lon: -74.0060, domain: 'pfizer.com', emp: 83000, rev: 58500, nis2: 'Critical Life Sciences Entity' },
+  { lei: '549300NOVARTIS001234', name: 'NOVARTIS AG', sector: 'Healthcare & Life Sci', country: 'Switzerland', city: 'Basel', lat: 47.5596, lon: 7.5886, domain: 'novartis.com', emp: 76000, rev: 45400, nis2: 'Critical Life Sciences Entity' },
+  { lei: '549300GSK00000123456', name: 'GSK PLC', sector: 'Healthcare & Life Sci', country: 'United Kingdom', city: 'London', lat: 51.5074, lon: -0.1278, domain: 'gsk.com', emp: 70000, rev: 30300, nis2: 'Critical Healthcare Entity' },
+
+  // Energy & Utilities
   { lei: '2138005T1QT6CSB94763', name: 'NATIONAL GRID PLC', sector: 'Energy & Utilities', country: 'United Kingdom', city: 'London', lat: 51.5074, lon: -0.1278, domain: 'nationalgrid.com', emp: 30000, rev: 18500, nis2: 'NIS2 · Essential Entity' },
   { lei: '549300175344MC3T7083', name: 'SSE PLC', sector: 'Energy & Utilities', country: 'United Kingdom', city: 'Perth', lat: 56.3950, lon: -3.4308, domain: 'sse.com', emp: 12000, rev: 12400, nis2: 'NIS2 · Essential Entity' },
   { lei: '549300EPF2D73T7X4317', name: 'CENTRICA PLC', sector: 'Energy & Utilities', country: 'United Kingdom', city: 'Windsor', lat: 51.4839, lon: -0.6044, domain: 'centrica.com', emp: 21000, rev: 26500, nis2: 'NIS2 · Essential Entity' },
@@ -31,14 +38,12 @@ const GLOBAL_SEED_ENTITIES = [
   { lei: '724500D6U4382R5QJ305', name: 'ENECO N.V.', sector: 'Energy & Utilities', country: 'Netherlands', city: 'Rotterdam', lat: 51.9244, lon: 4.4777, domain: 'eneco.nl', emp: 4000, rev: 7200, nis2: 'NIS2 · Essential Entity' },
   { lei: '7245005U0HOS0BNDNM83', name: 'VATTENFALL N.V.', sector: 'Energy & Utilities', country: 'Netherlands', city: 'Amsterdam', lat: 52.3676, lon: 4.9041, domain: 'vattenfall.nl', emp: 4500, rev: 8100, nis2: 'NIS2 · Essential Entity' },
   { lei: '7245000958L0568C3S87', name: 'ALLIANDER N.V.', sector: 'Energy & Utilities', country: 'Netherlands', city: 'Arnhem', lat: 51.9800, lon: 5.9000, domain: 'alliander.com', emp: 6000, rev: 2300, nis2: 'NIS2 · Essential Entity' },
-  // Major International Global Orgs
   { lei: '2138002V8TFAVUJM6209', name: 'SHELL PLC', sector: 'Energy & Utilities', country: 'United Kingdom', city: 'London', lat: 51.5074, lon: -0.1278, domain: 'shell.com', emp: 90000, rev: 380000, nis2: 'NIS2 · Essential Entity' },
   { lei: '5493005CCWD5L31Q2F83', name: 'BP P.L.C.', sector: 'Energy & Utilities', country: 'United Kingdom', city: 'London', lat: 51.5074, lon: -0.1278, domain: 'bp.com', emp: 67000, rev: 240000, nis2: 'NIS2 · Essential Entity' },
+
+  // Technology & Industrial
   { lei: '5493001X70O3Z8P58405', name: 'SIEMENS AG', sector: 'Technology & SaaS', country: 'Germany', city: 'Munich', lat: 48.1351, lon: 11.5820, domain: 'siemens.com', emp: 320000, rev: 77000, nis2: 'DORA / NIS2 · Critical Supplier' },
   { lei: '969500049P7T3T7V8901', name: 'SCHNEIDER ELECTRIC SE', sector: 'Technology & SaaS', country: 'France', city: 'Rueil-Malmaison', lat: 48.8776, lon: 2.1804, domain: 'se.com', emp: 150000, rev: 36000, nis2: 'DORA / NIS2 · Critical Supplier' },
-  { lei: '558800175344MC3T7083', name: 'EDF - ELECTRICITE DE FRANCE', sector: 'Energy & Utilities', country: 'France', city: 'Paris', lat: 48.8566, lon: 2.3522, domain: 'edf.fr', emp: 170000, rev: 140000, nis2: 'NIS2 · Essential Entity' },
-  { lei: '724500SHELL0000123456', name: 'EQUINOR ASA', sector: 'Energy & Utilities', country: 'Norway', city: 'Stavanger', lat: 58.9700, lon: 5.7331, domain: 'equinor.com', emp: 22000, rev: 106000, nis2: 'NIS2 · Essential Entity' },
-  { lei: '5493007W35X172909476', name: 'TOTALENERGIES SE', sector: 'Energy & Utilities', country: 'France', city: 'Courbevoie', lat: 48.8967, lon: 2.2531, domain: 'totalenergies.com', emp: 100000, rev: 218000, nis2: 'NIS2 · Essential Entity' },
   { lei: '724500MICROSOFT001234', name: 'MICROSOFT CORPORATION', sector: 'Technology & SaaS', country: 'United States', city: 'Redmond', lat: 47.6740, lon: -122.1215, domain: 'microsoft.com', emp: 220000, rev: 211000, nis2: 'DORA · Critical ICT Provider' }
 ];
 
@@ -146,7 +151,7 @@ function getBootstrapData() {
         reg: e.nis2_status || 'NIS2 · In Scope Entity',
         rec: 4,
         val: 4,
-        lens: e.sector.startsWith('Energy') ? 'ENE' : 'TEC',
+        lens: e.sector.startsWith('Energy') ? 'ENE' : e.sector.startsWith('Health') ? 'HLT' : 'TEC',
         trig: signals.length > 0 ? signals[0].title : `Live LEI resolved record (${e.master_key_val}). Active compliance monitoring.`,
         ax: e.axis_scores ? JSON.parse(e.axis_scores) : [78, 65, 72, 82, 60],
         lk: 12,
@@ -276,7 +281,6 @@ function getBootstrapData() {
     const realOrgLinks = {};
     const realExtInt = {};
 
-    // FIXED: EXTINT MUST be an ARRAY OF TWO ARRAYS [ [ext_axes...], [int_axes...] ]
     targets.forEach(t => {
       realOrgLinks[t.n] = [
         { label: 'GLEIF Level 2 Ownership', target: 'Verified Corporate Registry Master' },
@@ -286,7 +290,6 @@ function getBootstrapData() {
       const extAxes = t.ax || [78, 65, 72, 82, 60];
       const intAxes = [t.rd || 80, Math.round((t.rd || 80) * 0.85), Math.round((t.rd || 80) * 0.9), Math.round((t.rd || 80) * 0.75), Math.round((t.rd || 80) * 0.8)];
 
-      // Array of two arrays: [ [ext...], [int...] ] -> Prevents e[0].reduce TypeError!
       realExtInt[t.n] = [ extAxes, intAxes ];
     });
 
