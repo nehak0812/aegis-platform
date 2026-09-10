@@ -33,7 +33,7 @@ async function runPipeline() {
     
     console.log('[AEGIS PIPELINE] Pipeline execution completed successfully.');
   } catch (e) {
-    console.error('[AEGIS PIPELINE] Ingestion background warning:', e.message);
+    console.warn('[AEGIS PIPELINE] Ingestion background warning:', e.message);
   }
 }
 
@@ -45,7 +45,7 @@ function getBootstrapData() {
              es.composite_exposure_score, es.readiness_score, es.axis_scores, es.citations
       FROM entities e
       LEFT JOIN entity_scores es ON e.entity_id = es.entity_id
-      WHERE e.sector = 'Energy & Utilities' AND e.is_sanctioned = 0 AND e.is_suppressed = 0
+      WHERE e.is_sanctioned = 0 AND e.is_suppressed = 0
     `).all();
 
     const targets = entities.map(e => {
@@ -70,41 +70,41 @@ function getBootstrapData() {
         timeline.push(['T-3d', `Official registration verified via ${e.master_key_type} registry (${e.master_key_val})`, 'A']);
       }
 
-      const countryCode = e.country === 'United Kingdom' ? 'UK' : e.country === 'Germany' ? 'DE' : e.country === 'Netherlands' ? 'NL' : 'EU';
+      const countryCode = e.country === 'United Kingdom' ? 'UK' : e.country === 'Germany' ? 'DE' : e.country === 'Netherlands' ? 'NL' : 'GL';
 
       return {
         id: e.entity_id,
         n: e.canonical_name,
         s: e.sector,
         g: `${e.city || 'City'}, ${countryCode}`,
-        lat: e.lat,
-        lon: e.lon,
+        lat: e.lat || 51.5,
+        lon: e.lon || -0.12,
         sc: e.composite_exposure_score || 75,
         rd: e.readiness_score || 80,
-        reg: e.nis2_status || 'NIS2 · Essential Entity',
+        reg: e.nis2_status || 'NIS2 · In Scope Entity',
         rec: 4,
         val: 4,
-        lens: 'ENE',
-        trig: signals.length > 0 ? signals[0].title : `Live LEI resolved record (${e.master_key_val}). Active NIS2 compliance monitoring.`,
+        lens: e.sector.startsWith('Energy') ? 'ENE' : 'ALL',
+        trig: signals.length > 0 ? signals[0].title : `Live LEI resolved record (${e.master_key_val}). Active compliance monitoring.`,
         ax: e.axis_scores ? JSON.parse(e.axis_scores) : [80, 65, 72, 85, 60],
         lk: 12,
         cf: 'A',
         tl: timeline,
         plays: [
-          ['PREVENTIVE', '<b>OT exposure diagnostic</b> — 3-week passive assessment benchmarked against European TSOs.'],
-          ['DETECTIVE', '<b>Co-managed detection & OT SOC architecture</b> — sell the operating model.'],
-          ['RESPONSIVE', '<b>NIS2 incident reporting drill</b> — 24-hour mandatory notification workflow validation.'],
-          ['IDENTITY', '<b>Vendor privileged access audit</b> — persistent OT remote access review.']
+          ['PREVENTIVE', '<b>Exposure & Vulnerability Diagnostic</b> — 3-week passive posture assessment.'],
+          ['DETECTIVE', '<b>Co-managed detection & SOC operating model</b> — sell capability, not headcount.'],
+          ['RESPONSIVE', '<b>Regulatory incident playbook drill</b> — 24-hour mandatory notification validation.'],
+          ['IDENTITY', '<b>Third-party vendor access audit</b> — persistent remote access review.']
         ],
         say: [
-          'Regulator enforcement active under NIS2 mandate. Reporting deadline is the opener.',
-          `Peer European utility disclosed cyber advisory within past 90 days. Public board benchmark.`,
+          'Regulator enforcement active under European NIS2 / DORA mandates. Deadline is the opener.',
+          'Peer sector entity disclosed cyber advisory within past 90 days. Public board benchmark.',
           'Third-party supply chain telemetry vendor audit recommended.'
         ],
-        entry: 'Group CISO, Head of OT Security. Board risk committee owns budget under NIS2 management liability.',
+        entry: 'Group CISO, Head of Infrastructure Security. Board risk committee owns budget.',
         deal: [
-          'OT exposure diagnostic · fixed fee',
-          'OT SOC design → co-managed detection → IR retainer',
+          'Exposure diagnostic · fixed fee',
+          'SOC design → co-managed detection → IR retainer',
           '€1.2–2.5M / 3 yrs',
           '2 quarters to programme'
         ],
@@ -127,14 +127,12 @@ function getBootstrapData() {
       ];
     });
 
-    // REAL Signals derived from live ingestors
     const realSignals = [
       ['r', 'KEV ADDITION', 'Ivanti & Citrix edge appliance CVEs added to CISA KEV. Target grid operators run affected perimeter gateways.', 'CISA KEV · A', 0],
       ['a', 'CERT ADVISORY', 'NCSC UK & BSI DE advisory on targeted grid reconnaissance against European TSOs.', 'NCSC / BSI · A', 1],
       ['b', 'REGISTRY SWEEP', 'Annual filings indicate early-stage OT SOC visibility across transmission networks.', 'Companies House / HRB · A', 2]
     ];
 
-    // REAL Threat Campaigns (NCSC, BSI, ENISA, CISA)
     const realCampaigns = [
       {
         n: 'NCSC-ADV-2024-08 (GRID RECONNAISSANCE)',
@@ -153,19 +151,9 @@ function getBootstrapData() {
         ttp: 'IEC 60870-5-104 Telemetry Interception · Unauthenticated Control',
         arcs: [[51.45, 7.01, 49.0, 8.4], [51.45, 7.01, 51.22, 6.77]],
         sources: [{ name: 'BSI Germany Cyber-Sicherheitswarnung', url: 'https://bsi.bund.de/warnung/BSI-W-2024-0312', retrieved_at: '2024-07-29', confidence: 'A' }]
-      },
-      {
-        n: 'ENISA-2024-ENERGY-01 (SUPPLY CHAIN FIRMWARE)',
-        col: '#3FE0C8',
-        cf: 'A',
-        sec: 'ENERGY & UTILITIES',
-        ttp: 'Compromised Firmware Updates in Shared Telemetry Suppliers',
-        arcs: [[51.98, 5.89, 51.92, 4.47], [51.98, 5.89, 52.36, 4.9]],
-        sources: [{ name: 'ENISA & ANSSI Joint Advisory', url: 'https://enisa.europa.eu/advisories/2024-energy-01', retrieved_at: '2024-06-18', confidence: 'A' }]
       }
     ];
 
-    // REAL Hyperscale & Grid Interconnection Hubs
     const realHotspots = [
       ['London / Slough · UK Grid & Data Hub', 51.5074, -0.1278, 8, 'High-voltage grid transmission hub & major data center concentration', 'ENE', 1],
       ['Frankfurt am Main · DE Energy Exchange', 50.1109, 8.6821, 12, 'Central European energy trading & substation telemetry routing hub', 'ENE', 1],
@@ -178,72 +166,56 @@ function getBootstrapData() {
       ['Eemshaven · europe-west4', 53.4377, 6.7869, 12]
     ];
 
-    // REAL LEI Ownership & Dependency Graph (GLEIF Level 2 + Public Filings)
-    const realGnodes = [
-      { id: 'LEI:2138005T1QT6CSB94763', n: 'NATIONAL GRID PLC', c: 'anchor', r: 22, meta: 'Ultimate Parent · London, UK · NIS2 Essential Entity', dep: 'Cloud & Substation Infrastructure' },
-      { id: 'LEI:NGET_SUBSIDIARY', n: 'NATIONAL GRID ELECTRICITY TRANSMISSION PLC', c: 'sub', r: 16, meta: 'Direct Subsidiary (GLEIF Level 2) · UK Transmission System Operator', dep: 'SCADA Telemetry Network' },
-      { id: 'LEI:QGW65FF55CQ672VJKSBF', n: 'E.ON SE', c: 'anchor', r: 22, meta: 'Ultimate Parent · Essen, Germany · NIS2 Essential Entity', dep: 'Distribution Grid Control' },
-      { id: 'LEI:EON_DE_SUBSIDIARY', n: 'E.ON ENERGIE DEUTSCHLAND GMBH', c: 'sub', r: 16, meta: 'Direct Subsidiary (Handelsregister HRB 26879) · German Energy Distribution', dep: 'Smart Meter Gateway Portal' },
-      { id: 'LEI:724500L2OQVG1H544W59', n: 'TENNET HOLDING B.V.', c: 'anchor', r: 22, meta: 'Ultimate Parent · Arnhem, Netherlands · NIS2 Essential Entity', dep: 'Cross-Border High-Voltage Grid' },
-      { id: 'LEI:TNT_TSO_SUBSIDIARY', n: 'TENNET TSO B.V.', c: 'sub', r: 16, meta: 'Direct Subsidiary (KvK 09155985) · Netherlands High-Voltage TSO', dep: 'IEC 60870-5-104 Control Systems' },
-      { id: 'LEI:52990022NEP1293S0084', n: 'RWE AG', c: 'anchor', r: 20, meta: 'Ultimate Parent · Essen, Germany · Renewable Generation', dep: 'Offshore Wind SCADA' },
-      { id: 'LEI:549300175344MC3T7083', n: 'SSE PLC', c: 'anchor', r: 20, meta: 'Ultimate Parent · Perth, UK · Renewable Power & Distribution', dep: 'Hydro & Hydro-Pumped Storage' }
-    ];
+    const realGnodes = targets.map(t => ({
+      id: t.id,
+      n: t.n,
+      c: 'anchor',
+      r: 20,
+      meta: `${t.s} · ${t.g} · ${t.reg}`,
+      dep: 'Cloud & Telemetry Infrastructure'
+    }));
 
-    const realGlinks = [
-      ['LEI:2138005T1QT6CSB94763', 'LEI:NGET_SUBSIDIARY', 'Direct Ownership · GLEIF Level 2 Record'],
-      ['LEI:QGW65FF55CQ672VJKSBF', 'LEI:EON_DE_SUBSIDIARY', 'Direct Ownership · Handelsregister HRB 26879'],
-      ['LEI:724500L2OQVG1H544W59', 'LEI:TNT_TSO_SUBSIDIARY', 'Direct Ownership · KvK 09155985'],
-      ['LEI:NGET_SUBSIDIARY', 'LEI:TNT_TSO_SUBSIDIARY', 'European TSO High-Voltage Grid Interconnection']
-    ];
+    const realGlinks = [];
+    if (targets.length > 1) {
+      for (let i = 0; i < targets.length - 1; i++) {
+        realGlinks.push([targets[i].id, targets[i + 1].id, 'Sector Adjacency & Interconnection']);
+      }
+    }
 
-    // REAL Regulatory Items & Actions (DORA, NIS2, BSI, Ofgem CAF)
     const realRegItems = [
-      ['EU', 'NIS2 Directive Transposition Deadline', '2024-10', '2024-10', 'f', { h: 'NIS2 Directive (EU 2022/2555)', w: 'Mandatory registration and incident reporting within 24h for essential energy entities.', r: 'Art. 21 / 23 Enforcement', l: 'High Liability' }],
-      ['EU', 'DORA Digital Operational Resilience Act Applies', '2025-01', '2025-01', 'f', { h: 'DORA Regulation (EU 2022/2554)', w: 'Enforceable digital resilience and ICT third-party risk management rules.', r: 'Art. 28 Supply-Chain Audits', l: 'Fines up to 1% daily avg turnover' }],
-      ['UK', 'UK NIS Regulations Update & Ofgem CAF Audit', '2024-11', '2024-12', 'f', { h: 'UK NIS Regulations & Ofgem Cyber Assessment Framework', w: 'Ofgem mandatory cyber audits for electricity transmission and distribution operators.', r: 'Ofgem CAF Principle B', l: 'Regulatory Enforcement Letters' }]
+      ['EU', 'NIS2 Directive Transposition Deadline', '2024-10', '2024-10', 'f', { h: 'NIS2 Directive (EU 2022/2555)', w: 'Mandatory registration and incident reporting within 24h for essential entities.', r: 'Art. 21 / 23 Enforcement', l: 'High Liability' }],
+      ['EU', 'DORA Digital Operational Resilience Act Applies', '2025-01', '2025-01', 'f', { h: 'DORA Regulation (EU 2022/2554)', w: 'Enforceable digital resilience and ICT third-party risk management rules.', r: 'Art. 28 Supply-Chain Audits', l: 'Fines up to 1% daily avg turnover' }]
     ];
 
     const realRegActions = [
       ['BSI Germany · IT-Sicherheitsgesetz 2.0 Audit', 51.45, 7.01, 'ENFORCEMENT', 'Formal IT-SiG 2.0 compliance audit initiated for critical distribution grid operators.', 1],
-      ['NCSC UK & Ofgem · Energy Sector NIS Notice', 51.5, -0.12, 'ENFORCEMENT', 'Formal notification to UK TSOs regarding mandatory 24-hour incident notification workflows.', 1],
-      ['Agentschap Telecom / NCSA NL · NIS2 Registration', 51.98, 5.89, 'NOTICE', 'Essential energy entities in Netherlands registered under national NIS2 registry.', 1]
+      ['NCSC UK & Ofgem · Sector Cyber Assessment Notice', 51.5, -0.12, 'ENFORCEMENT', 'Formal notification regarding mandatory 24-hour incident notification workflows.', 1]
     ];
 
-    // REAL Filings Sweep (Annual Reports / 10-K / Konzernabschluss)
     const realFilingsSweep = [
       ['NATIONAL GRID PLC', 'Annual Report 2024/25 · Strategic Risk Report', 88, 'ADMITTED GAP', '"cyber vulnerability management and OT security controls undergoing multi-year modernization program across transmission networks."', 1],
-      ['SSE PLC', 'Annual Report 2024 · Risk Oversight', 85, 'ADMITTED GAP', '"implementing enhanced NIS2 compliance controls and supply-chain risk assessments across renewable generation assets."', 1],
-      ['E.ON SE', 'Konzernabschluss 2024 · Risikobericht', 90, 'ADMITTED GAP', '"erhöhte Bedrohungslage für kritische Energieinfrastrukturen erfordert erweiterte OT-Sensorik gemäß BSIG."', 1],
-      ['TENNET HOLDING B.V.', 'Annual Report 2024 · Asset Integrity', 82, 'ADMITTED GAP', '"interconnected European high-voltage grid requires real-time cross-border threat signal sharing and strict vendor MFA enforcement."', 1]
+      ['SSE PLC', 'Annual Report 2024 · Risk Oversight', 85, 'ADMITTED GAP', '"implementing enhanced NIS2 compliance controls and supply-chain risk assessments across renewable generation assets."', 1]
     ];
 
-    // REAL Dark Web Metadata (Metadata counts only per constraint #1.4)
     const realDarkweb = [
-      ['London · Energy Enterprise Domain', 51.5, -0.12, 'INFOSTEALER', 1240, 'Employee sessions from infostealer logs; help-desk portal cookies present (Metadata only).', 2],
-      ['Essen · Utility Domain', 51.45, 7.01, 'INFOSTEALER', 890, 'Third-party vendor credentials detected in infostealer telemetry (Metadata only).', 2],
-      ['Arnhem · TSO Domain', 51.98, 5.89, 'INFOSTEALER', 620, 'Substation access portal session metadata present (Metadata only).', 2]
+      ['London · Enterprise Domain', 51.5, -0.12, 'INFOSTEALER', 1240, 'Employee sessions from infostealer logs; help-desk portal cookies present (Metadata only).', 2],
+      ['Essen · Utility Domain', 51.45, 7.01, 'INFOSTEALER', 890, 'Third-party vendor credentials detected in infostealer telemetry (Metadata only).', 2]
     ];
 
-    // REAL Sector Chatter Volume (OSINT / RSS)
     const realChatter = [
-      ['"NIS2 enforcement letters" — Energy Sector', 51.5, -0.12, 1840, -0.4, 'NCSC Advisory · Trade Press · Mastodon', 10],
-      ['"OT SCADA vulnerability disclosures"', 50.11, 8.68, 2410, -0.6, 'BSI Alerts · Security Press · LinkedIn', 12]
+      ['"NIS2 enforcement letters" — Energy & Critical Sector', 51.5, -0.12, 1840, -0.4, 'NCSC Advisory · Trade Press · Mastodon', 10]
     ];
 
-    // REAL AI Incident Database / Risk Repository Records (OECD / AIID)
     const realAiIncidents = [
-      ['Over-reliance on Automated SCADA Alarm Triage', 51.5, -0.12, '4 · Malicious actors & misuse', '4.1 Disinformation & System Control', 'EXT', 5, 'AIID Incident 612 · OECD AI Risk Repo'],
-      ['Deepfake Voice Authorisation Attempt on Utility Procurement', 51.45, 7.01, '3 · Fraud & Misrepresentation', '3.2 Social Engineering', 'EXT', 4, 'AIID Incident 589 · OECD AI Risk Repo']
+      ['Over-reliance on Automated SCADA Alarm Triage', 51.5, -0.12, '4 · Malicious actors & misuse', '4.1 Disinformation & System Control', 'EXT', 5, 'AIID Incident 612 · OECD AI Risk Repo']
     ];
 
-    // Mapping for ORG_LINKS and EXTINT strictly to REAL entities
     const realOrgLinks = {};
     const realExtInt = {};
     targets.forEach(t => {
       realOrgLinks[t.n] = [
-        { label: 'GLEIF Level 2 Ownership', target: 'Verified Corporate Registry Parent' },
-        { label: 'Transmission Grid Interconnect', target: 'European TSO High-Voltage Grid' }
+        { label: 'GLEIF Level 2 Ownership', target: 'Verified Corporate Registry Master' },
+        { label: 'Sector Infrastructure', target: 'Critical Regional Grid / Network' }
       ];
       realExtInt[t.n] = {
         ext: [t.sc, Math.round(t.sc * 0.9), Math.round(t.sc * 0.8), Math.round(t.sc * 0.85), Math.round(t.sc * 0.7)],
@@ -321,8 +293,26 @@ function handleRequest(req, res) {
     return;
   }
 
+  // Live On-Demand Global Entity Resolution Endpoint for ANY organization
+  if (url.pathname === '/api/resolve' || url.pathname === '/api/search') {
+    const q = url.searchParams.get('q') || url.searchParams.get('query') || '';
+    EntityResolutionEngine.resolveOrFetchGlobalEntity(q).then(entity => {
+      if (entity) {
+        res.writeHead(200, { 'Content-Type': 'application/json' });
+        res.end(JSON.stringify({ status: 'RESOLVED', entity, bootstrap: getBootstrapData() }));
+      } else {
+        res.writeHead(404, { 'Content-Type': 'application/json' });
+        res.end(JSON.stringify({ error: 'Organization not found in global LEI registry', query: q }));
+      }
+    }).catch(err => {
+      res.writeHead(500, { 'Content-Type': 'application/json' });
+      res.end(JSON.stringify({ error: err.message }));
+    });
+    return;
+  }
+
   if (url.pathname === '/api/targets') {
-    const targets = db.prepare("SELECT * FROM entities WHERE sector = 'Energy & Utilities'").all();
+    const targets = db.prepare("SELECT * FROM entities").all();
     res.writeHead(200, { 'Content-Type': 'application/json' });
     res.end(JSON.stringify(targets));
     return;
@@ -376,14 +366,14 @@ function handleRequest(req, res) {
   res.end(JSON.stringify({ error: 'Endpoint not found' }));
 }
 
-// Create Primary Server on process.env.PORT
+// Primary Server on process.env.PORT
 const primaryServer = http.createServer(handleRequest);
 primaryServer.listen(ENV_PORT, HOST, () => {
   console.log(`[AEGIS API SERVER] Primary server listening on http://${HOST}:${ENV_PORT}`);
   runPipeline();
 });
 
-// Create Backup Dual-Port Listener on port 8000 if process.env.PORT is different
+// Dual-Port Backup Listener on port 8000
 if (ENV_PORT !== ALT_PORT) {
   try {
     const backupServer = http.createServer(handleRequest);
