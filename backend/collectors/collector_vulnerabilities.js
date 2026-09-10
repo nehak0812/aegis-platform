@@ -57,7 +57,7 @@ async function collectVulnerabilities() {
   `);
 
   const insertEntitySignal = db.prepare(`
-    INSERT OR REPLACE INTO entity_signals (entity_id, signal_id, attribution_method, confidence_grade, attributed_at)
+    INSERT OR IGNORE INTO entity_signals (entity_id, signal_id, attribution_method, confidence_grade, attributed_at)
     VALUES (?, ?, 'PASSIVE_DNS_CERT_MATCH', 'A', ?)
   `);
 

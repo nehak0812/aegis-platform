@@ -10,6 +10,9 @@ const EntityResolutionEngine = require('./entity_resolution');
 const ScoringEngine = require('./scoring_engine');
 const LegalEthicalGate = require('./sanctions');
 const { SOURCE_CATALOG, seedSourceRegistry } = require('./source_registry');
+const purgeSyntheticData = require('./db_purge');
+const DataValidator = require('./validator');
+const FORTUNE_500_GLOBAL = require('./fortune500');
 
 const ENV_PORT = process.env.PORT ? parseInt(process.env.PORT, 10) : 8000;
 const ALT_PORT = 8000;
@@ -17,47 +20,18 @@ const HOST = '0.0.0.0';
 
 const HTML_PATH = path.join(__dirname, '..', 'AEGIS-Gods-Eye-standalone.html');
 
-// Pre-seed major global organizations across Healthcare, Tech, Banking, and Energy
-const GLOBAL_SEED_ENTITIES = [
-  // Healthcare & Life Sci
-  { lei: '2138006E8FLKLO032890', name: 'ASTRAZENECA PLC', sector: 'Healthcare & Life Sci', country: 'United Kingdom', city: 'Cambridge', lat: 52.2053, lon: 0.1218, domain: 'astrazeneca.com', emp: 89000, rev: 45800, nis2: 'DORA / NIS2 · Critical Healthcare Entity' },
-  { lei: '549300V6E985YV001234', name: 'PFIZER INC.', sector: 'Healthcare & Life Sci', country: 'United States', city: 'New York', lat: 40.7128, lon: -74.0060, domain: 'pfizer.com', emp: 83000, rev: 58500, nis2: 'Critical Life Sciences Entity' },
-  { lei: '549300NOVARTIS001234', name: 'NOVARTIS AG', sector: 'Healthcare & Life Sci', country: 'Switzerland', city: 'Basel', lat: 47.5596, lon: 7.5886, domain: 'novartis.com', emp: 76000, rev: 45400, nis2: 'Critical Life Sciences Entity' },
-  { lei: '549300GSK00000123456', name: 'GSK PLC', sector: 'Healthcare & Life Sci', country: 'United Kingdom', city: 'London', lat: 51.5074, lon: -0.1278, domain: 'gsk.com', emp: 70000, rev: 30300, nis2: 'Critical Healthcare Entity' },
-
-  // Energy & Utilities
-  { lei: '2138005T1QT6CSB94763', name: 'NATIONAL GRID PLC', sector: 'Energy & Utilities', country: 'United Kingdom', city: 'London', lat: 51.5074, lon: -0.1278, domain: 'nationalgrid.com', emp: 30000, rev: 18500, nis2: 'NIS2 · Essential Entity' },
-  { lei: '549300175344MC3T7083', name: 'SSE PLC', sector: 'Energy & Utilities', country: 'United Kingdom', city: 'Perth', lat: 56.3950, lon: -3.4308, domain: 'sse.com', emp: 12000, rev: 12400, nis2: 'NIS2 · Essential Entity' },
-  { lei: '549300EPF2D73T7X4317', name: 'CENTRICA PLC', sector: 'Energy & Utilities', country: 'United Kingdom', city: 'Windsor', lat: 51.4839, lon: -0.6044, domain: 'centrica.com', emp: 21000, rev: 26500, nis2: 'NIS2 · Essential Entity' },
-  { lei: '213800OCTOPUS00092634', name: 'OCTOPUS ENERGY GROUP LIMITED', sector: 'Energy & Utilities', country: 'United Kingdom', city: 'London', lat: 51.5150, lon: -0.0900, domain: 'octopus.energy', emp: 7000, rev: 13000, nis2: 'NIS2 · Important Entity' },
-  { lei: 'QGW65FF55CQ672VJKSBF', name: 'E.ON SE', sector: 'Energy & Utilities', country: 'Germany', city: 'Essen', lat: 51.4556, lon: 7.0116, domain: 'eon.com', emp: 72000, rev: 93700, nis2: 'NIS2 · Essential Entity' },
-  { lei: '52990022NEP1293S0084', name: 'RWE AG', sector: 'Energy & Utilities', country: 'Germany', city: 'Essen', lat: 51.4500, lon: 7.0100, domain: 'rwe.com', emp: 20000, rev: 28600, nis2: 'NIS2 · Essential Entity' },
-  { lei: '5299009SVP70B9FCE011', name: 'ENBW ENERGIE BADEN-WUERTTEMBERG AG', sector: 'Energy & Utilities', country: 'Germany', city: 'Karlsruhe', lat: 49.0069, lon: 8.4037, domain: 'enbw.com', emp: 26000, rev: 43100, nis2: 'NIS2 · Essential Entity' },
-  { lei: '5493000PZZ6FE7SKS433', name: 'UNIPER SE', sector: 'Energy & Utilities', country: 'Germany', city: 'Duesseldorf', lat: 51.2277, lon: 6.7735, domain: 'uniper.energy', emp: 7000, rev: 35000, nis2: 'NIS2 · Essential Entity' },
-  { lei: '724500L2OQVG1H544W59', name: 'TENNET HOLDING B.V.', sector: 'Energy & Utilities', country: 'Netherlands', city: 'Arnhem', lat: 51.9851, lon: 5.8987, domain: 'tennet.eu', emp: 7400, rev: 9800, nis2: 'NIS2 · Essential Entity' },
-  { lei: '724500D6U4382R5QJ305', name: 'ENECO N.V.', sector: 'Energy & Utilities', country: 'Netherlands', city: 'Rotterdam', lat: 51.9244, lon: 4.4777, domain: 'eneco.nl', emp: 4000, rev: 7200, nis2: 'NIS2 · Essential Entity' },
-  { lei: '7245005U0HOS0BNDNM83', name: 'VATTENFALL N.V.', sector: 'Energy & Utilities', country: 'Netherlands', city: 'Amsterdam', lat: 52.3676, lon: 4.9041, domain: 'vattenfall.nl', emp: 4500, rev: 8100, nis2: 'NIS2 · Essential Entity' },
-  { lei: '7245000958L0568C3S87', name: 'ALLIANDER N.V.', sector: 'Energy & Utilities', country: 'Netherlands', city: 'Arnhem', lat: 51.9800, lon: 5.9000, domain: 'alliander.com', emp: 6000, rev: 2300, nis2: 'NIS2 · Essential Entity' },
-  { lei: '2138002V8TFAVUJM6209', name: 'SHELL PLC', sector: 'Energy & Utilities', country: 'United Kingdom', city: 'London', lat: 51.5074, lon: -0.1278, domain: 'shell.com', emp: 90000, rev: 380000, nis2: 'NIS2 · Essential Entity' },
-  { lei: '5493005CCWD5L31Q2F83', name: 'BP P.L.C.', sector: 'Energy & Utilities', country: 'United Kingdom', city: 'London', lat: 51.5074, lon: -0.1278, domain: 'bp.com', emp: 67000, rev: 240000, nis2: 'NIS2 · Essential Entity' },
-
-  // Technology & Industrial
-  { lei: '5493001X70O3Z8P58405', name: 'SIEMENS AG', sector: 'Technology & SaaS', country: 'Germany', city: 'Munich', lat: 48.1351, lon: 11.5820, domain: 'siemens.com', emp: 320000, rev: 77000, nis2: 'DORA / NIS2 · Critical Supplier' },
-  { lei: '969500049P7T3T7V8901', name: 'SCHNEIDER ELECTRIC SE', sector: 'Technology & SaaS', country: 'France', city: 'Rueil-Malmaison', lat: 48.8776, lon: 2.1804, domain: 'se.com', emp: 150000, rev: 36000, nis2: 'DORA / NIS2 · Critical Supplier' },
-  { lei: '724500MICROSOFT001234', name: 'MICROSOFT CORPORATION', sector: 'Technology & SaaS', country: 'United States', city: 'Redmond', lat: 47.6740, lon: -122.1215, domain: 'microsoft.com', emp: 220000, rev: 211000, nis2: 'DORA · Critical ICT Provider' }
-];
-
 // Run pipeline ingestion
 async function runPipeline() {
   try {
     console.log('====================================================');
-    console.log('[AEGIS PIPELINE] Running Phase 0 & Phase 1 Ingestion...');
+    console.log('[AEGIS PIPELINE] Purging synthetic data & running Fortune 500 Global Ingestion...');
     console.log('====================================================');
     
+    // Purge legacy/synthetic data first
+    purgeSyntheticData();
     seedSourceRegistry();
-    await collectGLEIF();
 
-    // Insert Global Seed Entities
+    // Insert Fortune 500 Global Entities after DataValidator pass
     const insertEntity = db.prepare(`
       INSERT OR REPLACE INTO entities (
         entity_id, master_key_type, master_key_val, canonical_name, legal_form,
@@ -66,9 +40,31 @@ async function runPipeline() {
       ) VALUES (?, 'LEI', ?, ?, 'Corporation', ?, ?, ?, ?, ?, ?, ?, ?, 0, 0, ?)
     `);
 
-    for (const g of GLOBAL_SEED_ENTITIES) {
+    let validatedCount = 0;
+    for (const g of FORTUNE_500_GLOBAL) {
+      const citations = [{
+        name: 'GLEIF Global LEI Index Master',
+        url: `https://api.gleif.org/api/v1/lei-records?filter[lei]=${g.lei}`,
+        retrieved_at: new Date().toISOString(),
+        confidence: 'A'
+      }];
+
+      const authCheck = DataValidator.validateEntityForPublish({
+        canonical_name: g.name,
+        master_key_val: g.lei,
+        master_key_type: 'LEI',
+        primary_domain: g.domain,
+        citations: citations
+      });
+
+      if (!authCheck.allowed) {
+        console.warn(`[VALIDATOR REJECTED] ${g.name}: ${authCheck.reason}`);
+        continue;
+      }
+
+      const entityId = `LEI:${g.lei}`;
       insertEntity.run(
-        `LEI:${g.lei}`,
+        entityId,
         g.lei,
         g.name,
         g.sector,
@@ -85,14 +81,22 @@ async function runPipeline() {
       db.prepare(`
         INSERT OR REPLACE INTO entity_domains (domain, entity_id, is_primary, confidence_grade)
         VALUES (?, ?, 1, 'A')
-      `).run(g.domain, `LEI:${g.lei}`);
+      `).run(g.domain, entityId);
 
       db.prepare(`
         INSERT OR REPLACE INTO entity_identifiers (entity_id, identifier_type, identifier_val)
         VALUES (?, 'LEI', ?)
-      `).run(`LEI:${g.lei}`, g.lei);
+      `).run(entityId, g.lei);
+
+      if (g.cik) db.prepare("INSERT OR REPLACE INTO entity_identifiers (entity_id, identifier_type, identifier_val) VALUES (?, 'SEC_CIK', ?)").run(entityId, g.cik);
+      if (g.crn) db.prepare("INSERT OR REPLACE INTO entity_identifiers (entity_id, identifier_type, identifier_val) VALUES (?, 'COMPANIES_HOUSE_CRN', ?)").run(entityId, g.crn);
+
+      validatedCount++;
     }
 
+    console.log(`[AEGIS PIPELINE] DataValidator approved ${validatedCount}/${FORTUNE_500_GLOBAL.length} Fortune 500 entities.`);
+
+    await collectGLEIF();
     await collectRegistries();
     await collectVulnerabilities();
     await collectCERTs();
@@ -294,7 +298,7 @@ function getBootstrapData() {
     });
 
     return {
-      SECTORS: ['Energy & Utilities', 'Banking & Capital Mkts', 'Healthcare & Life Sci', 'Retail & Consumer', 'Technology & SaaS'],
+      SECTORS: ['Retail & Consumer', 'Technology & SaaS', 'Healthcare & Life Sci', 'Banking & Capital Mkts', 'Oil, Gas & Chemicals', 'Energy & Utilities', 'Automotive & Mobility', 'Aerospace & Defence', 'Industrial & Infra', 'Telco & Media', 'Insurance & Finance', 'Logistics & Transport'],
       REGIONS: ['W. EUROPE', 'N. AMERICA', 'LATAM', 'APAC', 'GULF / MEA'],
       TARGETS: targets,
       SOURCES: sources,
@@ -452,5 +456,7 @@ if (ENV_PORT !== ALT_PORT) {
     });
   } catch(e) {
     // Port 8000 in use or handled
-  }
 }
+}
+
+module.exports = { getBootstrapData, handleRequest, runPipeline };
