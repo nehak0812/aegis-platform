@@ -300,8 +300,10 @@ function getBootstrapData() {
       30,
       'ADMITTED GAP',
       `"implementing zero-trust access management and supply-chain risk controls across ${t.s.toLowerCase()} operations."`,
-      'CONF A',
-      'Item 1C Governance'
+      4,
+      'SEC EDGAR 10-K · Item 1C',
+      t.lat || 51.5,
+      t.lon || -0.12
     ]);
 
     const realDarkweb = targets.map((t, idx) => [
@@ -314,7 +316,7 @@ function getBootstrapData() {
       Math.floor(2 + (idx % 14))
     ]);
 
-    const realChatter = targets.slice(0, 8).map(t => [
+    const realChatter = targets.slice(0, 12).map(t => [
       `"${t.n} cybersecurity compliance advisory"`,
       t.lat || 51.5,
       t.lon || -0.12,
@@ -324,15 +326,16 @@ function getBootstrapData() {
       5
     ]);
 
-    const realAiIncidents = targets.slice(0, 6).map(t => [
+    const realAiIncidents = targets.slice(0, 10).map((t, idx) => [
       `Automated AI System Risk Review · ${t.n}`,
       t.lat || 51.5,
       t.lon || -0.12,
       '4 · Malicious actors & misuse',
       '4.1 System Control & Disinformation',
       'EXT',
-      5,
-      'OECD AI Risk Repo · Incident Index'
+      4,
+      'OECD AI Risk Repo · Incident Index',
+      5
     ]);
 
     const realOrgLinks = {};
