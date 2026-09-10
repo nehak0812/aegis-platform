@@ -141,7 +141,24 @@ function getBootstrapData() {
         timeline.push(['T-3d', `Official registration verified via ${e.master_key_type} registry (${e.master_key_val})`, 'A']);
       }
 
-      const countryCode = e.country === 'United Kingdom' ? 'UK' : e.country === 'Germany' ? 'DE' : e.country === 'Netherlands' ? 'NL' : e.country === 'France' ? 'FR' : 'GL';
+      const countryMap = {
+        'United States': 'US',
+        'United Kingdom': 'UK',
+        'Germany': 'DE',
+        'Netherlands': 'NL',
+        'France': 'FR',
+        'China': 'CN',
+        'Japan': 'JP',
+        'South Korea': 'KR',
+        'Saudi Arabia': 'SA',
+        'India': 'IN',
+        'Brazil': 'BR',
+        'Taiwan': 'TW',
+        'Australia': 'AU',
+        'Norway': 'NO',
+        'Switzerland': 'CH'
+      };
+      const countryCode = countryMap[e.country] || 'GL';
 
       return {
         id: e.entity_id,
@@ -299,7 +316,7 @@ function getBootstrapData() {
 
     return {
       SECTORS: ['Retail & Consumer', 'Technology & SaaS', 'Healthcare & Life Sci', 'Banking & Capital Mkts', 'Oil, Gas & Chemicals', 'Energy & Utilities', 'Automotive & Mobility', 'Aerospace & Defence', 'Industrial & Infra', 'Telco & Media', 'Insurance & Finance', 'Logistics & Transport'],
-      REGIONS: ['W. EUROPE', 'N. AMERICA', 'LATAM', 'APAC', 'GULF / MEA'],
+      REGIONS: ['GLOBAL', 'NORTH AMERICA', 'EAST ASIA', 'EUROPE', 'MIDDLE EAST', 'SOUTH ASIA', 'LATIN AMERICA', 'APAC / OCEANIA'],
       TARGETS: targets,
       SOURCES: sources,
       SIGNALS: realSignals,
