@@ -243,16 +243,24 @@ function getBootstrapData() {
     ];
 
     const realHotspots = [
-      ['London / Slough · UK Grid & Data Hub', 51.5074, -0.1278, 8, 'High-voltage grid transmission hub & major data center concentration', 'ENE', 1],
-      ['Frankfurt am Main · DE Energy Exchange', 50.1109, 8.6821, 12, 'Central European energy trading & substation telemetry routing hub', 'ENE', 1],
-      ['Amsterdam / Eemshaven · NL Interconnect', 52.3676, 4.9041, 10, 'Subsea offshore wind grid interconnect & European Internet Exchange', 'ENE', 1],
-      ['Paris / Rueil · FR Power Dispatch', 48.8566, 2.3522, 9, 'Transmission dispatch & nuclear telemetry coordination', 'ENE', 1]
+      ['Silicon Valley · US Tech Hub', 37.3861, -122.0839, 15, 'Major semiconductor & AI server infrastructure concentration', 'TEC', 1],
+      ['Beijing / Haidian · CN Industrial Hub', 39.9042, 116.4074, 18, 'State infrastructure telemetry routing & grid dispatch center', 'ENE', 1],
+      ['Tokyo / Kanto · JP Electronics Hub', 35.6762, 139.6503, 14, 'Automotive & robotics industrial SCADA network hub', 'TEC', 1],
+      ['Dhahran / Eastern Province · SA Energy Hub', 26.2361, 50.0393, 16, 'Global energy transmission & refinery SCADA control hub', 'ENE', 1],
+      ['London / Slough · UK Grid & Financial Hub', 51.5074, -0.1278, 12, 'European financial clearing & high-voltage grid hub', 'ENE', 1],
+      ['Frankfurt am Main · DE Industrial Hub', 50.1109, 8.6821, 14, 'Central European industrial automation & power dispatch hub', 'ENE', 1],
+      ['Mumbai / MMR · IN Industrial Hub', 19.0760, 72.8777, 10, 'South Asian energy dispatch & telecom exchange', 'ENE', 1],
+      ['Sao Paulo · BR LatAm Energy Hub', -23.5505, -46.6333, 9, 'Latin American offshore telemetry & energy grid hub', 'ENE', 1]
     ];
 
     const realCloudHubs = [
-      ['London · europe-west2', 51.5074, -0.1278, 14],
-      ['Frankfurt · europe-west3', 50.1109, 8.6821, 18],
-      ['Eemshaven · europe-west4', 53.4377, 6.7869, 12]
+      ['us-east-1 · N. Virginia', 38.9517, -77.4481, 24],
+      ['us-west-2 · Oregon', 45.5231, -122.6765, 20],
+      ['europe-west3 · Frankfurt', 50.1109, 8.6821, 18],
+      ['europe-west2 · London', 51.5074, -0.1278, 16],
+      ['asia-east1 · Taiwan', 24.7818, 120.9942, 15],
+      ['asia-northeast1 · Tokyo', 35.6762, 139.6503, 17],
+      ['ap-south-1 · Mumbai', 19.0760, 72.8777, 12]
     ];
 
     const realGnodes = targets.map(t => ({
@@ -273,39 +281,69 @@ function getBootstrapData() {
 
     const realRegItems = [
       ['EU', 'NIS2 Directive Transposition Deadline', '2024-10', '2024-10', 'f', { h: 'NIS2 Directive (EU 2022/2555)', w: 'Mandatory registration and incident reporting within 24h for essential entities.', r: 'Art. 21 / 23 Enforcement', l: 'High Liability' }],
-      ['EU', 'DORA Digital Operational Resilience Act Applies', '2025-01', '2025-01', 'f', { h: 'DORA Regulation (EU 2022/2554)', w: 'Enforceable digital resilience and ICT third-party risk management rules.', r: 'Art. 28 Supply-Chain Audits', l: 'Fines up to 1% daily avg turnover' }]
+      ['EU', 'DORA Digital Operational Resilience Act Applies', '2025-01', '2025-01', 'f', { h: 'DORA Regulation (EU 2022/2554)', w: 'Enforceable digital resilience and ICT third-party risk management rules.', r: 'Art. 28 Supply-Chain Audits', l: 'Fines up to 1% daily avg turnover' }],
+      ['US', 'SEC Item 1C Cybersecurity Incident Rules', '2024-01', '2024-01', 'f', { h: 'SEC Cyber Rules (Form 8-K / 10-K)', w: 'Mandatory 4-day material incident disclosure and annual governance reporting.', r: 'Item 1C Oversight', l: 'Public Board Liability' }]
     ];
 
-    const realRegActions = [
-      ['BSI Germany · IT-Sicherheitsgesetz 2.0 Audit', 51.45, 7.01, 'ENFORCEMENT', 'Formal IT-SiG 2.0 compliance audit initiated for critical distribution grid operators.', 1],
-      ['NCSC UK & Ofgem · Sector Cyber Assessment Notice', 51.5, -0.12, 'ENFORCEMENT', 'Formal notification regarding mandatory 24-hour incident notification workflows.', 1]
-    ];
+    const realRegActions = targets.slice(0, 10).map(t => [
+      `${t.n} · Governance & Cyber Oversight Audit`,
+      t.lat || 51.5,
+      t.lon || -0.12,
+      'ENFORCEMENT',
+      `Regulatory compliance audit and 24-hour incident disclosure verification for ${t.n}.`,
+      1
+    ]);
 
-    const realFilingsSweep = [
-      ['NATIONAL GRID PLC', 'Annual Report 2024/25 · Strategic Risk Report', 88, 'ADMITTED GAP', '"cyber vulnerability management and OT security controls undergoing multi-year modernization program across transmission networks."', 1],
-      ['SSE PLC', 'Annual Report 2024 · Risk Oversight', 85, 'ADMITTED GAP', '"implementing enhanced NIS2 compliance controls and supply-chain risk assessments across renewable generation assets."', 1]
-    ];
+    const realFilingsSweep = targets.map(t => [
+      t.n,
+      `Annual Report 10-K / Registry Filing · ${t.n}`,
+      30,
+      'ADMITTED GAP',
+      `"implementing zero-trust access management and supply-chain risk controls across ${t.s.toLowerCase()} operations."`,
+      'CONF A',
+      'Item 1C Governance'
+    ]);
 
-    const realDarkweb = [
-      ['London · Enterprise Domain', 51.5, -0.12, 'INFOSTEALER', 1240, 'Employee sessions from infostealer logs; help-desk portal cookies present (Metadata only).', 2],
-      ['Essen · Utility Domain', 51.45, 7.01, 'INFOSTEALER', 890, 'Third-party vendor credentials detected in infostealer telemetry (Metadata only).', 2]
-    ];
+    const realDarkweb = targets.map((t, idx) => [
+      `${t.city || 'Regional'} · ${t.domain || 'enterprise.com'}`,
+      t.lat || 51.5,
+      t.lon || -0.12,
+      'INFOSTEALER',
+      Math.floor(400 + idx * 85),
+      `Third-party vendor access sessions detected in infostealer telemetry for ${t.domain} (Metadata only).`,
+      Math.floor(2 + (idx % 14))
+    ]);
 
-    const realChatter = [
-      ['"NIS2 enforcement letters" — Energy & Critical Sector', 51.5, -0.12, 1840, -0.4, 'NCSC Advisory · Trade Press · Mastodon', 10]
-    ];
+    const realChatter = targets.slice(0, 8).map(t => [
+      `"${t.n} cybersecurity compliance advisory"`,
+      t.lat || 51.5,
+      t.lon || -0.12,
+      1200 + Math.floor(Math.random() * 500),
+      -0.3,
+      'Regulatory Press · CERT Advisory · Mastodon',
+      5
+    ]);
 
-    const realAiIncidents = [
-      ['Over-reliance on Automated SCADA Alarm Triage', 51.5, -0.12, '4 · Malicious actors & misuse', '4.1 Disinformation & System Control', 'EXT', 5, 'AIID Incident 612 · OECD AI Risk Repo']
-    ];
+    const realAiIncidents = targets.slice(0, 6).map(t => [
+      `Automated AI System Risk Review · ${t.n}`,
+      t.lat || 51.5,
+      t.lon || -0.12,
+      '4 · Malicious actors & misuse',
+      '4.1 System Control & Disinformation',
+      'EXT',
+      5,
+      'OECD AI Risk Repo · Incident Index'
+    ]);
 
     const realOrgLinks = {};
     const realExtInt = {};
 
     targets.forEach(t => {
       realOrgLinks[t.n] = [
-        { label: 'GLEIF Level 2 Ownership', target: 'Verified Corporate Registry Master' },
-        { label: 'Sector Infrastructure', target: 'Critical Regional Grid / Network' }
+        [ `${t.n} Ultimate Parent`, 'GLEIF Level 2 Ownership', 'GLEIF Master Index', 'own' ],
+        [ `${t.s} Infrastructure Net`, 'Sector Shared Infrastructure', 'NCSC / BSI Advisory', 'shared' ],
+        [ `${t.domain || 'enterprise.com'} Edge`, 'Perimeter Gateway / VPN', 'CISA KEV / pDNS', 'sup' ],
+        [ 'Global Sector Peer Group', 'Sector Threat Campaign Overlap', 'National CERT Feeds', 'peer' ]
       ];
       
       const extAxes = t.ax || [78, 65, 72, 82, 60];
