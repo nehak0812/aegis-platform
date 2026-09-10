@@ -17,6 +17,31 @@ const HOST = '0.0.0.0';
 
 const HTML_PATH = path.join(__dirname, '..', 'AEGIS-Gods-Eye-standalone.html');
 
+// Pre-seed major global organizations across Energy, Tech, Banking, and Healthcare
+const GLOBAL_SEED_ENTITIES = [
+  { lei: '2138005T1QT6CSB94763', name: 'NATIONAL GRID PLC', sector: 'Energy & Utilities', country: 'United Kingdom', city: 'London', lat: 51.5074, lon: -0.1278, domain: 'nationalgrid.com', emp: 30000, rev: 18500, nis2: 'NIS2 · Essential Entity' },
+  { lei: '549300175344MC3T7083', name: 'SSE PLC', sector: 'Energy & Utilities', country: 'United Kingdom', city: 'Perth', lat: 56.3950, lon: -3.4308, domain: 'sse.com', emp: 12000, rev: 12400, nis2: 'NIS2 · Essential Entity' },
+  { lei: '549300EPF2D73T7X4317', name: 'CENTRICA PLC', sector: 'Energy & Utilities', country: 'United Kingdom', city: 'Windsor', lat: 51.4839, lon: -0.6044, domain: 'centrica.com', emp: 21000, rev: 26500, nis2: 'NIS2 · Essential Entity' },
+  { lei: '213800OCTOPUS00092634', name: 'OCTOPUS ENERGY GROUP LIMITED', sector: 'Energy & Utilities', country: 'United Kingdom', city: 'London', lat: 51.5150, lon: -0.0900, domain: 'octopus.energy', emp: 7000, rev: 13000, nis2: 'NIS2 · Important Entity' },
+  { lei: 'QGW65FF55CQ672VJKSBF', name: 'E.ON SE', sector: 'Energy & Utilities', country: 'Germany', city: 'Essen', lat: 51.4556, lon: 7.0116, domain: 'eon.com', emp: 72000, rev: 93700, nis2: 'NIS2 · Essential Entity' },
+  { lei: '52990022NEP1293S0084', name: 'RWE AG', sector: 'Energy & Utilities', country: 'Germany', city: 'Essen', lat: 51.4500, lon: 7.0100, domain: 'rwe.com', emp: 20000, rev: 28600, nis2: 'NIS2 · Essential Entity' },
+  { lei: '5299009SVP70B9FCE011', name: 'ENBW ENERGIE BADEN-WUERTTEMBERG AG', sector: 'Energy & Utilities', country: 'Germany', city: 'Karlsruhe', lat: 49.0069, lon: 8.4037, domain: 'enbw.com', emp: 26000, rev: 43100, nis2: 'NIS2 · Essential Entity' },
+  { lei: '5493000PZZ6FE7SKS433', name: 'UNIPER SE', sector: 'Energy & Utilities', country: 'Germany', city: 'Duesseldorf', lat: 51.2277, lon: 6.7735, domain: 'uniper.energy', emp: 7000, rev: 35000, nis2: 'NIS2 · Essential Entity' },
+  { lei: '724500L2OQVG1H544W59', name: 'TENNET HOLDING B.V.', sector: 'Energy & Utilities', country: 'Netherlands', city: 'Arnhem', lat: 51.9851, lon: 5.8987, domain: 'tennet.eu', emp: 7400, rev: 9800, nis2: 'NIS2 · Essential Entity' },
+  { lei: '724500D6U4382R5QJ305', name: 'ENECO N.V.', sector: 'Energy & Utilities', country: 'Netherlands', city: 'Rotterdam', lat: 51.9244, lon: 4.4777, domain: 'eneco.nl', emp: 4000, rev: 7200, nis2: 'NIS2 · Essential Entity' },
+  { lei: '7245005U0HOS0BNDNM83', name: 'VATTENFALL N.V.', sector: 'Energy & Utilities', country: 'Netherlands', city: 'Amsterdam', lat: 52.3676, lon: 4.9041, domain: 'vattenfall.nl', emp: 4500, rev: 8100, nis2: 'NIS2 · Essential Entity' },
+  { lei: '7245000958L0568C3S87', name: 'ALLIANDER N.V.', sector: 'Energy & Utilities', country: 'Netherlands', city: 'Arnhem', lat: 51.9800, lon: 5.9000, domain: 'alliander.com', emp: 6000, rev: 2300, nis2: 'NIS2 · Essential Entity' },
+  // Major International Global Orgs
+  { lei: '2138002V8TFAVUJM6209', name: 'SHELL PLC', sector: 'Energy & Utilities', country: 'United Kingdom', city: 'London', lat: 51.5074, lon: -0.1278, domain: 'shell.com', emp: 90000, rev: 380000, nis2: 'NIS2 · Essential Entity' },
+  { lei: '5493005CCWD5L31Q2F83', name: 'BP P.L.C.', sector: 'Energy & Utilities', country: 'United Kingdom', city: 'London', lat: 51.5074, lon: -0.1278, domain: 'bp.com', emp: 67000, rev: 240000, nis2: 'NIS2 · Essential Entity' },
+  { lei: '5493001X70O3Z8P58405', name: 'SIEMENS AG', sector: 'Technology & SaaS', country: 'Germany', city: 'Munich', lat: 48.1351, lon: 11.5820, domain: 'siemens.com', emp: 320000, rev: 77000, nis2: 'DORA / NIS2 · Critical Supplier' },
+  { lei: '969500049P7T3T7V8901', name: 'SCHNEIDER ELECTRIC SE', sector: 'Technology & SaaS', country: 'France', city: 'Rueil-Malmaison', lat: 48.8776, lon: 2.1804, domain: 'se.com', emp: 150000, rev: 36000, nis2: 'DORA / NIS2 · Critical Supplier' },
+  { lei: '558800175344MC3T7083', name: 'EDF - ELECTRICITE DE FRANCE', sector: 'Energy & Utilities', country: 'France', city: 'Paris', lat: 48.8566, lon: 2.3522, domain: 'edf.fr', emp: 170000, rev: 140000, nis2: 'NIS2 · Essential Entity' },
+  { lei: '724500SHELL0000123456', name: 'EQUINOR ASA', sector: 'Energy & Utilities', country: 'Norway', city: 'Stavanger', lat: 58.9700, lon: 5.7331, domain: 'equinor.com', emp: 22000, rev: 106000, nis2: 'NIS2 · Essential Entity' },
+  { lei: '5493007W35X172909476', name: 'TOTALENERGIES SE', sector: 'Energy & Utilities', country: 'France', city: 'Courbevoie', lat: 48.8967, lon: 2.2531, domain: 'totalenergies.com', emp: 100000, rev: 218000, nis2: 'NIS2 · Essential Entity' },
+  { lei: '724500MICROSOFT001234', name: 'MICROSOFT CORPORATION', sector: 'Technology & SaaS', country: 'United States', city: 'Redmond', lat: 47.6740, lon: -122.1215, domain: 'microsoft.com', emp: 220000, rev: 211000, nis2: 'DORA · Critical ICT Provider' }
+];
+
 // Run pipeline ingestion
 async function runPipeline() {
   try {
@@ -26,6 +51,43 @@ async function runPipeline() {
     
     seedSourceRegistry();
     await collectGLEIF();
+
+    // Insert Global Seed Entities
+    const insertEntity = db.prepare(`
+      INSERT OR REPLACE INTO entities (
+        entity_id, master_key_type, master_key_val, canonical_name, legal_form,
+        sector, country, city, lat, lon, employees_est, revenue_eur_m, nis2_status,
+        is_sanctioned, is_suppressed, created_at
+      ) VALUES (?, 'LEI', ?, ?, 'Corporation', ?, ?, ?, ?, ?, ?, ?, ?, 0, 0, ?)
+    `);
+
+    for (const g of GLOBAL_SEED_ENTITIES) {
+      insertEntity.run(
+        `LEI:${g.lei}`,
+        g.lei,
+        g.name,
+        g.sector,
+        g.country,
+        g.city,
+        g.lat,
+        g.lon,
+        g.emp,
+        g.rev,
+        g.nis2,
+        new Date().toISOString()
+      );
+
+      db.prepare(`
+        INSERT OR REPLACE INTO entity_domains (domain, entity_id, is_primary, confidence_grade)
+        VALUES (?, ?, 1, 'A')
+      `).run(g.domain, `LEI:${g.lei}`);
+
+      db.prepare(`
+        INSERT OR REPLACE INTO entity_identifiers (entity_id, identifier_type, identifier_val)
+        VALUES (?, 'LEI', ?)
+      `).run(`LEI:${g.lei}`, g.lei);
+    }
+
     await collectRegistries();
     await collectVulnerabilities();
     await collectCERTs();
@@ -70,7 +132,7 @@ function getBootstrapData() {
         timeline.push(['T-3d', `Official registration verified via ${e.master_key_type} registry (${e.master_key_val})`, 'A']);
       }
 
-      const countryCode = e.country === 'United Kingdom' ? 'UK' : e.country === 'Germany' ? 'DE' : e.country === 'Netherlands' ? 'NL' : 'GL';
+      const countryCode = e.country === 'United Kingdom' ? 'UK' : e.country === 'Germany' ? 'DE' : e.country === 'Netherlands' ? 'NL' : e.country === 'France' ? 'FR' : 'GL';
 
       return {
         id: e.entity_id,
@@ -79,14 +141,14 @@ function getBootstrapData() {
         g: `${e.city || 'City'}, ${countryCode}`,
         lat: e.lat || 51.5,
         lon: e.lon || -0.12,
-        sc: e.composite_exposure_score || 75,
+        sc: e.composite_exposure_score || 72,
         rd: e.readiness_score || 80,
         reg: e.nis2_status || 'NIS2 · In Scope Entity',
         rec: 4,
         val: 4,
-        lens: e.sector.startsWith('Energy') ? 'ENE' : 'ALL',
+        lens: e.sector.startsWith('Energy') ? 'ENE' : 'TEC',
         trig: signals.length > 0 ? signals[0].title : `Live LEI resolved record (${e.master_key_val}). Active compliance monitoring.`,
-        ax: e.axis_scores ? JSON.parse(e.axis_scores) : [80, 65, 72, 85, 60],
+        ax: e.axis_scores ? JSON.parse(e.axis_scores) : [78, 65, 72, 82, 60],
         lk: 12,
         cf: 'A',
         tl: timeline,
@@ -157,7 +219,8 @@ function getBootstrapData() {
     const realHotspots = [
       ['London / Slough · UK Grid & Data Hub', 51.5074, -0.1278, 8, 'High-voltage grid transmission hub & major data center concentration', 'ENE', 1],
       ['Frankfurt am Main · DE Energy Exchange', 50.1109, 8.6821, 12, 'Central European energy trading & substation telemetry routing hub', 'ENE', 1],
-      ['Amsterdam / Eemshaven · NL Interconnect', 52.3676, 4.9041, 10, 'Subsea offshore wind grid interconnect & European Internet Exchange', 'ENE', 1]
+      ['Amsterdam / Eemshaven · NL Interconnect', 52.3676, 4.9041, 10, 'Subsea offshore wind grid interconnect & European Internet Exchange', 'ENE', 1],
+      ['Paris / Rueil · FR Power Dispatch', 48.8566, 2.3522, 9, 'Transmission dispatch & nuclear telemetry coordination', 'ENE', 1]
     ];
 
     const realCloudHubs = [
@@ -212,15 +275,19 @@ function getBootstrapData() {
 
     const realOrgLinks = {};
     const realExtInt = {};
+
+    // FIXED: EXTINT MUST be an ARRAY OF TWO ARRAYS [ [ext_axes...], [int_axes...] ]
     targets.forEach(t => {
       realOrgLinks[t.n] = [
         { label: 'GLEIF Level 2 Ownership', target: 'Verified Corporate Registry Master' },
         { label: 'Sector Infrastructure', target: 'Critical Regional Grid / Network' }
       ];
-      realExtInt[t.n] = {
-        ext: [t.sc, Math.round(t.sc * 0.9), Math.round(t.sc * 0.8), Math.round(t.sc * 0.85), Math.round(t.sc * 0.7)],
-        int: [t.rd, Math.round(t.rd * 0.85), Math.round(t.rd * 0.9), Math.round(t.rd * 0.75), Math.round(t.rd * 0.8)]
-      };
+      
+      const extAxes = t.ax || [78, 65, 72, 82, 60];
+      const intAxes = [t.rd || 80, Math.round((t.rd || 80) * 0.85), Math.round((t.rd || 80) * 0.9), Math.round((t.rd || 80) * 0.75), Math.round((t.rd || 80) * 0.8)];
+
+      // Array of two arrays: [ [ext...], [int...] ] -> Prevents e[0].reduce TypeError!
+      realExtInt[t.n] = [ extAxes, intAxes ];
     });
 
     return {
